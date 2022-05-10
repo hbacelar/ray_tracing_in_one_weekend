@@ -10,15 +10,15 @@ use vec::Vec3;
 // Math: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 fn hit_sphere(center: &Vec3, radius: f64, r: &Ray) -> Option<f64> {
     let oc = r.origin() - center;
-    let a = vec::dot(r.direction(), r.direction());
-    let b = vec::dot(&oc, r.direction()) * 2.0;
-    let c = vec::dot(&oc, &oc) - (radius * radius);
-    let discriminant = b * b - 4.0 * a * c;
+    let a = r.direction().len_squared();
+    let half_b = vec::dot(&oc, r.direction());
+    let c = oc.len_squared() - (radius * radius);
+    let discriminant = half_b * half_b - a * c;
 
     if discriminant < 0.0 {
         None
     } else {
-        Some((-b - discriminant.sqrt()) / (2.0 * a))
+        Some((-half_b - discriminant.sqrt()) / a)
     }
 }
 
