@@ -9,25 +9,12 @@ mod vec;
 use ray::Ray;
 use vec::Vec3;
 
-// Math: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
-fn hit_sphere(center: &Vec3, radius: f64, r: &Ray) -> Option<f64> {
-    let oc = r.origin() - center;
-    let a = r.direction().len_squared();
-    let half_b = vec::dot(&oc, r.direction());
-    let c = oc.len_squared() - (radius * radius);
-    let discriminant = half_b * half_b - a * c;
+use crate::hittable::{Hittable, HittableList};
+use crate::sphere::Sphere;
 
-    if discriminant < 0.0 {
-        None
-    } else {
-        Some((-half_b - discriminant.sqrt()) / a)
-    }
-}
-
-fn ray_color(r: &Ray) -> Vec3 {
-    if let Some(t) = hit_sphere(&Vec3(0.0, 0.0, -1.0), 0.5, r) {
-        let n = vec::unit_vec(r.at(t) - Vec3(0.0, 0.0, -1.0));
-        return Vec3(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0) * 0.5;
+fn ray_color(r: &Ray, world: &HittableList) -> Vec3 {
+    if let Some(hit) = world.hit(r, 0.0, f64::MAX) {
+        return (hit.normal + Vec3(1.0, 1.0, 1.0)) * 0.5;
     }
 
     let unit_direction = vec::unit_vec(*r.direction());
@@ -40,6 +27,19 @@ fn main() {
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
     const IMAGE_WIDTH: i32 = 400;
     let image_height: i32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO).round() as i32;
+
+    // World
+    let sphere1 = Sphere {
+        center: Vec3(0.0, 0.0, -1.0),
+        radius: 0.5,
+    };
+    let sphere2 = Sphere {
+        center: Vec3(0.0, -100.5, -1.0),
+        radius: 100.0,
+    };
+
+    let objects: Vec<Box<dyn Hittable>> = vec![Box::new(sphere1), Box::new(sphere2)];
+    let world = HittableList::new(objects);
 
     // Camera
     let viewport_height = 2.0;
@@ -67,7 +67,7 @@ fn main() {
                 origin,
                 lower_left_corner + horizontal * u + vertical * v - origin,
             );
-            let color = ray_color(&r);
+            let color = ray_color(&r, &world);
             color::write_color(Box::new(io::stdout()), &color);
         }
     }
