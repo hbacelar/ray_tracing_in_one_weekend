@@ -1,7 +1,9 @@
 use std::io::{self, Write};
 
 mod color;
+mod hittable;
 mod ray;
+mod sphere;
 mod vec;
 
 use ray::Ray;
