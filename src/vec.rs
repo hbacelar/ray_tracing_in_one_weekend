@@ -32,6 +32,14 @@ impl Neg for Vec3 {
     }
 }
 
+impl Neg for &Vec3 {
+    type Output = Vec3;
+
+    fn neg(self) -> Vec3 {
+        Vec3(-self.0, -self.1, -self.2)
+    }
+}
+
 impl Add for Vec3 {
     type Output = Self;
 
