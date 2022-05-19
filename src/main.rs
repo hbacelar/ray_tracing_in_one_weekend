@@ -21,8 +21,8 @@ fn ray_color(r: &Ray, world: &HittableList, depth: u8, rng: &mut ThreadRng) -> V
         return Vec3(0.0, 0.0, 0.0);
     }
 
-    if let Some(hit) = world.hit(r, 0.0, f64::MAX) {
-        let target = hit.p + hit.normal + Vec3::random_in_unit_sphere(rng);
+    if let Some(hit) = world.hit(r, 0.001, f64::MAX) {
+        let target = hit.p + hit.normal + Vec3::random_unit_vector(rng);
         return ray_color(&Ray::new(hit.p, target - hit.p), world, depth - 1, rng) * 0.5;
         // return (hit.normal + Vec3(1.0, 1.0, 1.0)) * 0.5;
     }

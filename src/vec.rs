@@ -141,6 +141,10 @@ impl Vec3 {
             }
         }
     }
+
+    pub fn random_unit_vector(rng: &mut ThreadRng) -> Vec3 {
+        unit_vec(Vec3::random_in_unit_sphere(rng))
+    }
 }
 
 pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
