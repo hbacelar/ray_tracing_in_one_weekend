@@ -5,7 +5,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct HitRecord {
-    p: Vec3,
+    pub p: Vec3,
     pub normal: Vec3,
     t: f64,
     front_face: bool,

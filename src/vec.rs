@@ -3,6 +3,8 @@ use std::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub},
 };
 
+use rand::{prelude::ThreadRng, Rng};
+
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3(pub f64, pub f64, pub f64);
 
@@ -113,6 +115,31 @@ impl Vec3 {
 
     pub fn z(&self) -> f64 {
         self.2
+    }
+
+    pub fn random(rng: &mut ThreadRng) -> Vec3 {
+        let x = rng.gen_range(0.0..1.0);
+        let y = rng.gen_range(0.0..1.0);
+        let z = rng.gen_range(0.0..1.0);
+
+        Vec3(x, y, z)
+    }
+
+    pub fn random_range(rng: &mut ThreadRng, min: f64, max: f64) -> Vec3 {
+        let x = rng.gen_range(min..max);
+        let y = rng.gen_range(min..max);
+        let z = rng.gen_range(min..max);
+
+        Vec3(x, y, z)
+    }
+
+    pub fn random_in_unit_sphere(rng: &mut ThreadRng) -> Vec3 {
+        loop {
+            let vec = Vec3::random_range(rng, -1.0, 1.0);
+            if vec.len_squared() < 1.0 {
+                return vec;
+            }
+        }
     }
 }
 
