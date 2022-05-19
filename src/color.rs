@@ -13,8 +13,8 @@ pub fn write_color(mut writter: Box<dyn Write>, pixel_color: &Vec3, samples_per_
     g *= scale;
     b *= scale;
 
-    let ir = (num::clamp(r, 0.0, 0.999) * 256.0).trunc();
-    let ig = (num::clamp(g, 0.0, 0.999) * 256.0).trunc();
-    let ib = (num::clamp(b, 0.0, 0.999) * 256.0).trunc();
+    let ir = (num::clamp(r.sqrt(), 0.0, 0.999) * 256.0).trunc();
+    let ig = (num::clamp(g.sqrt(), 0.0, 0.999) * 256.0).trunc();
+    let ib = (num::clamp(b.sqrt(), 0.0, 0.999) * 256.0).trunc();
     writeln!(writter, "{} {} {}", ir, ig, ib).unwrap();
 }
