@@ -1,4 +1,5 @@
-use rand::prelude::ThreadRng;
+use num::traits::Pow;
+use rand::{prelude::ThreadRng, Rng};
 
 use crate::{
     hittable::HitRecord,
@@ -65,10 +66,17 @@ impl Dielectric {
     pub fn new(ir: f64) -> Self {
         Dielectric { ir }
     }
+
+    pub fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+        // schlink approximation
+        let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        let r0 = r0 * r0;
+        r0 + (1.0 - r0) * (1.0 - cosine).pow(5)
+    }
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, _: &mut ThreadRng) -> Option<(Ray, Vec3)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut ThreadRng) -> Option<(Ray, Vec3)> {
         let refraction_ratio = if rec.front_face {
             1.0 / self.ir
         } else {
@@ -80,7 +88,9 @@ impl Material for Dielectric {
         let cos_theta = vec::dot(&-unit_direction, &rec.normal).min(1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
-        if refraction_ratio * sin_theta > 1.0 {
+        if refraction_ratio * sin_theta > 1.0
+            || Self::reflectance(cos_theta, refraction_ratio) > rng.gen_range(0.0..1.0)
+        {
             let direction = Vec3::reflect(unit_direction, rec.normal);
             Some((Ray::new(rec.p, direction), Vec3(1.0, 1.0, 1.0)))
         } else {
