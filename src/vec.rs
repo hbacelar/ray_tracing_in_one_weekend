@@ -152,6 +152,15 @@ impl Vec3 {
         unit_vec(Vec3::random_in_unit_sphere(rng))
     }
 
+    pub fn random_in_unit_disk(rng: &mut ThreadRng) -> Vec3 {
+        loop {
+            let vec = Vec3(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+            if vec.len_squared() < 1.0 {
+                return vec;
+            }
+        }
+    }
+
     pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
         v - n * dot(&v, &n) * 2.0
     }

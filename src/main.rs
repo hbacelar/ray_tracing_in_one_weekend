@@ -90,12 +90,20 @@ fn main() {
     let world = HittableList::new(objects);
 
     // Camera
+    let lookfrom = Vec3(3.0, 3.0, 2.0);
+    let lookat = Vec3(0.0, 0.0, -1.0);
+    let vup = Vec3(0.0, 1.0, 0.0);
+    let dist_to_focus = (lookfrom - lookat).len();
+    let aperture = 2.0;
+
     let cam = Camera::new(
-        Vec3(-2.0, 2.0, 1.0),
-        Vec3(0.0, 0.0, -1.0),
-        Vec3(0.0, 1.0, 0.0),
+        lookfrom,
+        lookat,
+        vup,
         20.0,
         ASPECT_RATIO,
+        aperture,
+        dist_to_focus,
     );
 
     // Render
@@ -111,7 +119,7 @@ fn main() {
                 let u = (i as f64 + random_f64.sample(&mut rng)) / (IMAGE_WIDTH - 1) as f64;
                 let v = (j as f64 + random_f64.sample(&mut rng)) / (image_height - 1) as f64;
 
-                let r = cam.get_ray(u, v);
+                let r = cam.get_ray(u, v, &mut rng);
                 pixel_color += ray_color(&r, &world, MAX_DEPTH, &mut rng);
             }
             color::write_color(Box::new(io::stdout()), &pixel_color, samples_per_pixel);
