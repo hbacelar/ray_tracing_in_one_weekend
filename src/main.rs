@@ -1,3 +1,4 @@
+use std::f64::consts::PI;
 use std::io;
 
 mod camera;
@@ -48,42 +49,43 @@ fn main() {
 
     // World
 
-    let material_ground = Lambertian::new(Vec3(0.8, 0.8, 0.0));
-    let material_center = Lambertian::new(Vec3(0.1, 0.2, 0.5));
-    let material_left = Dielectric::new(1.5);
-    let material_right = Metal::new(Vec3(0.8, 0.6, 0.2), 0.0);
+    let r = (PI / 4.0).cos();
+    // let material_ground = Lambertian::new(Vec3(0.8, 0.8, 0.0));
+    // let material_center = Lambertian::new(Vec3(0.1, 0.2, 0.5));
+    let material_left = Lambertian::new(Vec3(0.0, 0.0, 1.0));
+    let material_right = Lambertian::new(Vec3(1.0, 0.0, 0.0));
 
-    let sphere_ground = Sphere {
-        center: Vec3(0.0, -100.5, -1.0),
-        radius: 100.0,
-        material: Box::new(material_ground),
-    };
-    let sphere_center = Sphere {
-        center: Vec3(0.0, 0.0, -1.0),
-        radius: 0.5,
-        material: Box::new(material_center),
-    };
+    // let sphere_ground = Sphere {
+    //     center: Vec3(0.0, -100.5, -1.0),
+    //     radius: 100.0,
+    //     material: Box::new(material_ground),
+    // };
+    // let sphere_center = Sphere {
+    //     center: Vec3(0.0, 0.0, -1.0),
+    //     radius: 0.5,
+    //     material: Box::new(material_center),
+    // };
     let sphere_left = Sphere {
-        center: Vec3(-1.0, 0.0, -1.0),
-        radius: 0.5,
+        center: Vec3(-r, 0.0, -1.0),
+        radius: r,
         material: Box::new(material_left),
     };
     let sphere_right = Sphere {
-        center: Vec3(1.0, 0.0, -1.0),
-        radius: 0.5,
+        center: Vec3(r, 0.0, -1.0),
+        radius: r,
         material: Box::new(material_right),
     };
 
     let objects: Vec<Box<dyn Hittable>> = vec![
-        Box::new(sphere_ground),
-        Box::new(sphere_center),
+        // Box::new(sphere_ground),
+        // Box::new(sphere_center),
         Box::new(sphere_left),
         Box::new(sphere_right),
     ];
     let world = HittableList::new(objects);
 
     // Camera
-    let cam = Camera::new();
+    let cam = Camera::new(90.0, ASPECT_RATIO);
 
     // Render
     println!("P3");
