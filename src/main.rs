@@ -1,4 +1,4 @@
-use std::io::{self, Write};
+use std::io;
 
 mod camera;
 mod color;
@@ -14,7 +14,7 @@ use vec::Vec3;
 
 use crate::camera::Camera;
 use crate::hittable::{Hittable, HittableList};
-use crate::material::{Lambertian, Metal};
+use crate::material::{Dielectric, Lambertian, Metal};
 use crate::sphere::Sphere;
 use rand::distributions::{Distribution, Uniform};
 
@@ -49,8 +49,8 @@ fn main() {
     // World
 
     let material_ground = Lambertian::new(Vec3(0.8, 0.8, 0.0));
-    let material_center = Lambertian::new(Vec3(0.7, 0.3, 0.3));
-    let material_left = Metal::new(Vec3(0.8, 0.8, 0.8), 0.3);
+    let material_center = Dielectric::new(1.5);
+    let material_left = Dielectric::new(1.5);
     let material_right = Metal::new(Vec3(0.8, 0.6, 0.2), 1.0);
 
     let sphere_ground = Sphere {

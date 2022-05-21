@@ -3,7 +3,7 @@ use rand::prelude::ThreadRng;
 use crate::{
     hittable::HitRecord,
     ray::Ray,
-    vec::{self, unit_vec, Vec3},
+    vec::{self, Vec3},
 };
 
 pub trait Material {
@@ -46,7 +46,7 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut ThreadRng) -> Option<(Ray, Vec3)> {
-        let reflected = Vec3::reflect(unit_vec(*r_in.direction()), rec.normal);
+        let reflected = Vec3::reflect(vec::unit_vec(*r_in.direction()), rec.normal);
         let scattered = Ray::new(rec.p, reflected + Vec3::random_unit_vector(rng) * self.fuzz);
 
         if vec::dot(scattered.direction(), &rec.normal) > 0.0 {
@@ -54,5 +54,31 @@ impl Material for Metal {
         } else {
             None
         }
+    }
+}
+
+pub struct Dielectric {
+    ir: f64,
+}
+
+impl Dielectric {
+    pub fn new(ir: f64) -> Self {
+        Dielectric { ir }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut ThreadRng) -> Option<(Ray, Vec3)> {
+        let refraction_ratio = if rec.front_face {
+            1.0 / self.ir
+        } else {
+            self.ir
+        };
+        let unit_direction = vec::unit_vec(*r_in.direction());
+        let reflected = Vec3::refract(unit_direction, rec.normal, refraction_ratio);
+
+        let scattered = Ray::new(rec.p, reflected);
+
+        Some((scattered, Vec3(1.0, 1.0, 1.0)))
     }
 }
