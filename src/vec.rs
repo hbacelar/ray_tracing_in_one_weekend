@@ -140,13 +140,11 @@ impl Vec3 {
     }
 
     pub fn random_in_unit_sphere(rng: &mut ThreadRng) -> Vec3 {
-        let mut c = 0;
         loop {
             let vec = Vec3::random_range(rng, -1.0, 1.0);
             if vec.len_squared() < 1.0 {
                 return vec;
             }
-            c += 1;
         }
     }
 
