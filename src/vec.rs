@@ -117,6 +117,12 @@ impl Vec3 {
         self.2
     }
 
+    pub fn near_zero(&self) -> bool {
+        let s: f64 = 1e-8;
+
+        self.0.abs() < s && self.1.abs() < s && self.2.abs() < s
+    }
+
     pub fn random(rng: &mut ThreadRng) -> Vec3 {
         let x = rng.gen_range(0.0..1.0);
         let y = rng.gen_range(0.0..1.0);
@@ -134,16 +140,22 @@ impl Vec3 {
     }
 
     pub fn random_in_unit_sphere(rng: &mut ThreadRng) -> Vec3 {
+        let mut c = 0;
         loop {
             let vec = Vec3::random_range(rng, -1.0, 1.0);
             if vec.len_squared() < 1.0 {
                 return vec;
             }
+            c += 1;
         }
     }
 
     pub fn random_unit_vector(rng: &mut ThreadRng) -> Vec3 {
         unit_vec(Vec3::random_in_unit_sphere(rng))
+    }
+
+    pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+        v - n * dot(&v, &n) * 2.0
     }
 }
 

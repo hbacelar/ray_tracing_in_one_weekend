@@ -1,22 +1,23 @@
 use crate::{
+    material::Material,
     ray::Ray,
     vec::{self, Vec3},
 };
 
-#[derive(Debug)]
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub p: Vec3,
     pub normal: Vec3,
     t: f64,
     front_face: bool,
+    pub material: &'a dyn Material,
 }
 
 pub struct HittableList {
     objects: Vec<Box<dyn Hittable>>,
 }
 
-impl HitRecord {
-    pub fn new(p: Vec3, outward_normal: Vec3, r: &Ray, t: f64) -> Self {
+impl<'a> HitRecord<'a> {
+    pub fn new(p: Vec3, outward_normal: Vec3, r: &Ray, t: f64, material: &'a dyn Material) -> Self {
         let front_face = vec::dot(&r.direction(), &outward_normal) < 0.0;
         let normal = if front_face {
             outward_normal
@@ -29,6 +30,7 @@ impl HitRecord {
             normal,
             t,
             front_face,
+            material,
         }
     }
 }

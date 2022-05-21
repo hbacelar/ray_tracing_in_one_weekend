@@ -1,13 +1,14 @@
 use crate::{
     hittable::{HitRecord, Hittable},
+    material::Material,
     ray::Ray,
     vec::{self, Vec3},
 };
 
-#[derive(Debug)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
+    pub material: Box<dyn Material>,
 }
 
 // Math: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
@@ -35,6 +36,8 @@ impl Hittable for Sphere {
         let p = r.at(root);
         let outward_normal = (p - self.center) / self.radius;
 
-        Some(HitRecord::new(p, outward_normal, r, root))
+        let x = &self.material;
+
+        Some(HitRecord::new(p, outward_normal, r, root, x.as_ref()))
     }
 }

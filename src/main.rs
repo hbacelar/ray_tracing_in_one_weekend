@@ -3,6 +3,7 @@ use std::io::{self, Write};
 mod camera;
 mod color;
 mod hittable;
+mod material;
 mod ray;
 mod sphere;
 mod vec;
@@ -13,6 +14,7 @@ use vec::Vec3;
 
 use crate::camera::Camera;
 use crate::hittable::{Hittable, HittableList};
+use crate::material::{Lambertian, Metal};
 use crate::sphere::Sphere;
 use rand::distributions::{Distribution, Uniform};
 
@@ -22,9 +24,10 @@ fn ray_color(r: &Ray, world: &HittableList, depth: u8, rng: &mut ThreadRng) -> V
     }
 
     if let Some(hit) = world.hit(r, 0.001, f64::MAX) {
-        let target = hit.p + hit.normal + Vec3::random_unit_vector(rng);
-        return ray_color(&Ray::new(hit.p, target - hit.p), world, depth - 1, rng) * 0.5;
-        // return (hit.normal + Vec3(1.0, 1.0, 1.0)) * 0.5;
+        if let Some((scattered, attenuation)) = hit.material.scatter(r, &hit, rng) {
+            return attenuation * ray_color(&scattered, world, depth - 1, rng);
+        }
+        return Vec3(0.0, 0.0, 0.0);
     }
 
     let unit_direction = vec::unit_vec(*r.direction());
@@ -44,16 +47,39 @@ fn main() {
     const MAX_DEPTH: u8 = 50;
 
     // World
-    let sphere1 = Sphere {
-        center: Vec3(0.0, 0.0, -1.0),
-        radius: 0.5,
-    };
-    let sphere2 = Sphere {
+
+    let material_ground = Lambertian::new(Vec3(0.8, 0.8, 0.0));
+    let material_center = Lambertian::new(Vec3(0.7, 0.3, 0.3));
+    let material_left = Metal::new(Vec3(0.8, 0.8, 0.8));
+    let material_right = Metal::new(Vec3(0.8, 0.6, 0.2));
+
+    let sphere_ground = Sphere {
         center: Vec3(0.0, -100.5, -1.0),
         radius: 100.0,
+        material: Box::new(material_ground),
+    };
+    let sphere_center = Sphere {
+        center: Vec3(0.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Box::new(material_center),
+    };
+    let sphere_left = Sphere {
+        center: Vec3(-1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Box::new(material_left),
+    };
+    let sphere_right = Sphere {
+        center: Vec3(1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Box::new(material_right),
     };
 
-    let objects: Vec<Box<dyn Hittable>> = vec![Box::new(sphere1), Box::new(sphere2)];
+    let objects: Vec<Box<dyn Hittable>> = vec![
+        Box::new(sphere_ground),
+        Box::new(sphere_center),
+        Box::new(sphere_left),
+        Box::new(sphere_right),
+    ];
     let world = HittableList::new(objects);
 
     // Camera
@@ -64,7 +90,7 @@ fn main() {
     println!("{} {}\n255", IMAGE_WIDTH, image_height);
 
     for j in (0..image_height).rev() {
-        eprint!("\rScanlines remaining: {}", j);
+        eprint!("\rScanlines remaining: {} ", j);
 
         for i in 0..IMAGE_WIDTH {
             let mut pixel_color = Vec3(0.0, 0.0, 0.0);
