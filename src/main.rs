@@ -49,9 +49,9 @@ fn main() {
     // World
 
     let material_ground = Lambertian::new(Vec3(0.8, 0.8, 0.0));
-    let material_center = Dielectric::new(1.5);
+    let material_center = Lambertian::new(Vec3(0.1, 0.2, 0.5));
     let material_left = Dielectric::new(1.5);
-    let material_right = Metal::new(Vec3(0.8, 0.6, 0.2), 1.0);
+    let material_right = Metal::new(Vec3(0.8, 0.6, 0.2), 0.0);
 
     let sphere_ground = Sphere {
         center: Vec3(0.0, -100.5, -1.0),

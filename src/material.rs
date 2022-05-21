@@ -39,7 +39,7 @@ pub struct Metal {
 
 impl Metal {
     pub fn new(albedo: Vec3, f: f64) -> Self {
-        let fuzz = if f < 1.0 { 1.0 } else { f };
+        let fuzz = if f < 1.0 { f } else { 1.0 };
         Metal { albedo, fuzz }
     }
 }
@@ -68,17 +68,24 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut ThreadRng) -> Option<(Ray, Vec3)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, _: &mut ThreadRng) -> Option<(Ray, Vec3)> {
         let refraction_ratio = if rec.front_face {
             1.0 / self.ir
         } else {
             self.ir
         };
         let unit_direction = vec::unit_vec(*r_in.direction());
-        let reflected = Vec3::refract(unit_direction, rec.normal, refraction_ratio);
 
-        let scattered = Ray::new(rec.p, reflected);
+        //Check if it can reflect or refract
+        let cos_theta = vec::dot(&-unit_direction, &rec.normal).min(1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
-        Some((scattered, Vec3(1.0, 1.0, 1.0)))
+        if refraction_ratio * sin_theta > 1.0 {
+            let direction = Vec3::reflect(unit_direction, rec.normal);
+            Some((Ray::new(rec.p, direction), Vec3(1.0, 1.0, 1.0)))
+        } else {
+            let direction = Vec3::refract(unit_direction, rec.normal, refraction_ratio);
+            Some((Ray::new(rec.p, direction), Vec3(1.0, 1.0, 1.0)))
+        }
     }
 }
