@@ -1,3 +1,5 @@
+use ray_tracing_in_one_weekend::color::Color;
+
 fn main() {
     let image_width = 256;
     let image_height = 256;
@@ -8,15 +10,12 @@ fn main() {
         eprint!("\rScanlines remaining: {} ", image_height - j);
 
         for i in 0..image_height {
-            let r = f64::from(i) / f64::from(image_width - 1);
-            let g = f64::from(j) / f64::from(image_height - 1);
-            let b: f64 = 0.0;
-
-            let ir = (255.9 * r) as u8;
-            let ig = (255.9 * g) as u8;
-            let ib = (255.0 * b) as u8;
-
-            println!("{ir} {ig} {ib}");
+            let color = Color::new(
+                f64::from(i) / f64::from(image_width - 1),
+                f64::from(j) / f64::from(image_height - 1),
+                0.0,
+            );
+            println!("{color}");
         }
     }
     eprint!("\rDone.                   \n");

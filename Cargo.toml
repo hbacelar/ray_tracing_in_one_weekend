@@ -3,3 +3,7 @@ name = "ray_tracing_in_one_weekend"
 version = "0.2.0"
 edition = "2024"
 
+[[bin]]
+name = "raytracer"
+path = "src/main.rs"
+
