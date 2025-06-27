@@ -1,29 +1,17 @@
 use ray_tracing_in_one_weekend::{
     color::Color,
+    hittable::Hittable,
     ray::Ray,
+    sphere::Sphere,
     vec3::{Point, Vec3},
 };
 
-fn hit_sphere(center: Point, radius: f64, ray: &Ray) -> Option<f64> {
-    let oc = center - ray.origin;
-    let a = ray.dir.length_squared();
-    let h = ray.dir.dot(&oc);
-    let c = oc.length_squared() - radius * radius;
-    let discriminant = h * h - a * c;
-
-    if discriminant < 0.0 {
-        None
-    } else {
-        let sqrt_d = discriminant.sqrt();
-        Some((h - sqrt_d) / a)
-    }
-}
-
 fn ray_color(ray: &Ray) -> Color {
     let sphere_center = Point::new(0.0, 0.0, -1.0);
-    if let Some(t) = hit_sphere(sphere_center, 0.5, ray) {
-        let normal = (ray.at(t) - sphere_center).unit_vector();
+    let s = Sphere::new(sphere_center, 0.5);
 
+    if let Some(h) = s.hit(ray, 0.0, f64::MAX) {
+        let normal = h.normal;
         let color: Color = (Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5).into();
         return color;
     }

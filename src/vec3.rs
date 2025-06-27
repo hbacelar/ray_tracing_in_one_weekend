@@ -40,7 +40,7 @@ impl Vec3 {
     pub fn unit_vector(&self) -> Vec3 {
         let length = self.length();
         if length == 0.0 {
-            return Vec3::default()
+            return Vec3::default();
         }
         self / length
     }
