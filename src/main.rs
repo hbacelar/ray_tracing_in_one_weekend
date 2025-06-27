@@ -6,16 +6,16 @@ use ray_tracing_in_one_weekend::{
 
 fn hit_sphere(center: Point, radius: f64, ray: &Ray) -> Option<f64> {
     let oc = center - ray.origin;
-    let a = ray.dir.dot(&ray.dir);
-    let b = (ray.dir * -2.0).dot(&oc);
-    let c = oc.dot(&oc) - radius * radius;
-    let discriminant = b * b - a * c * 4.0;
+    let a = ray.dir.length_squared();
+    let h = ray.dir.dot(&oc);
+    let c = oc.length_squared() - radius * radius;
+    let discriminant = h * h - a * c;
 
     if discriminant < 0.0 {
         None
     } else {
         let sqrt_d = discriminant.sqrt();
-        Some((-b - sqrt_d) / (2.0 * a))
+        Some((h - sqrt_d) / a)
     }
 }
 
