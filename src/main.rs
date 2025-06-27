@@ -6,11 +6,8 @@ use ray_tracing_in_one_weekend::{
     vec3::{Point, Vec3},
 };
 
-fn ray_color(ray: &Ray) -> Color {
-    let sphere_center = Point::new(0.0, 0.0, -1.0);
-    let s = Sphere::new(sphere_center, 0.5);
-
-    if let Some(h) = s.hit(ray, 0.0, f64::MAX) {
+fn ray_color<T: Hittable>(ray: &Ray, world: &[T]) -> Color {
+    if let Some(h) = world.hit(ray, 0.0, f64::MAX) {
         let normal = h.normal;
         let color: Color = (Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5).into();
         return color;
@@ -33,6 +30,12 @@ fn main() {
     let image_width: u32 = 400;
 
     let image_height = (image_width as f64 / aspect_ratio).max(1.0) as u32;
+
+    // World
+    let world = vec![
+        Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5),
+        Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0),
+    ];
 
     // Camera
     let focal_length = 1.0;
@@ -75,7 +78,7 @@ fn main() {
             let ray_direction = pixel_center - camera_center;
 
             let ray = Ray::new(camera_center, ray_direction);
-            let color = ray_color(&ray);
+            let color = ray_color(&ray, &world);
 
             println!("{color}");
         }
