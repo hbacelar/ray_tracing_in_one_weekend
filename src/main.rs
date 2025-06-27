@@ -4,19 +4,28 @@ use ray_tracing_in_one_weekend::{
     vec3::{Point, Vec3},
 };
 
-fn hit_sphere(center: Point, radius: f64, ray: &Ray) -> bool {
+fn hit_sphere(center: Point, radius: f64, ray: &Ray) -> Option<f64> {
     let oc = center - ray.origin;
     let a = ray.dir.dot(&ray.dir);
-    let b = (ray.dir * 2.0).dot(&oc);
+    let b = (ray.dir * -2.0).dot(&oc);
     let c = oc.dot(&oc) - radius * radius;
     let discriminant = b * b - a * c * 4.0;
 
-    discriminant > f64::EPSILON
+    if discriminant < 0.0 {
+        None
+    } else {
+        let sqrt_d = discriminant.sqrt();
+        Some((-b - sqrt_d) / (2.0 * a))
+    }
 }
 
 fn ray_color(ray: &Ray) -> Color {
-    if hit_sphere(Point::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Color::new(1.0, 0.0, 0.0);
+    let sphere_center = Point::new(0.0, 0.0, -1.0);
+    if let Some(t) = hit_sphere(sphere_center, 0.5, ray) {
+        let normal = (ray.at(t) - sphere_center).unit_vector();
+
+        let color: Color = (Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5).into();
+        return color;
     }
 
     let unit_direction = ray.dir.unit_vector();

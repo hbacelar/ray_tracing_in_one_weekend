@@ -38,7 +38,11 @@ impl Vec3 {
     }
 
     pub fn unit_vector(&self) -> Vec3 {
-        self / self.length()
+        let length = self.length();
+        if length == 0.0 {
+            return Vec3::default()
+        }
+        self / length
     }
 }
 
@@ -54,8 +58,8 @@ impl Neg for Vec3 {
     fn neg(self) -> Self::Output {
         Self {
             x: self.x.neg(),
-            y: self.x.neg(),
-            z: self.x.neg(),
+            y: self.y.neg(),
+            z: self.z.neg(),
         }
     }
 }
@@ -239,6 +243,22 @@ impl Mul<f64> for &Vec3 {
 
     fn mul(self, rhs: f64) -> Self::Output {
         (*self) * rhs
+    }
+}
+
+impl Mul<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        rhs * self
+    }
+}
+
+impl Mul<&Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: &Vec3) -> Self::Output {
+        (*rhs) * self
     }
 }
 
