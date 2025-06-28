@@ -1,13 +1,14 @@
 use ray_tracing_in_one_weekend::{
     color::Color,
     hittable::Hittable,
+    interval::Interval,
     ray::Ray,
     sphere::Sphere,
     vec3::{Point, Vec3},
 };
 
 fn ray_color<T: Hittable>(ray: &Ray, world: &[T]) -> Color {
-    if let Some(h) = world.hit(ray, 0.0, f64::MAX) {
+    if let Some(h) = world.hit(ray, Interval::new(0.0, f64::INFINITY)) {
         let normal = h.normal;
         let color: Color = (Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5).into();
         return color;
