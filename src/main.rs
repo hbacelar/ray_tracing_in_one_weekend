@@ -11,6 +11,6 @@ fn main() {
     let aspect_ratio: f64 = 16.0 / 9.0;
     let image_width: u32 = 400;
 
-    let cam = Camera::new(image_width, aspect_ratio);
+    let cam = Camera::new(image_width, aspect_ratio, 10);
     cam.render(&world);
 }
