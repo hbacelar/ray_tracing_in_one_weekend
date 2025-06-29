@@ -26,9 +26,8 @@ impl Default for Camera {
 
 fn ray_color<T: Hittable>(ray: &Ray, world: &[T]) -> Vec3 {
     if let Some(h) = world.hit(ray, Interval::new(0.0, f64::INFINITY)) {
-        let normal = h.normal;
-        let color = Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5;
-        return color;
+        let dir = Vec3::random_on_hemisphere(h.normal);
+        return 0.5 * ray_color(&Ray { dir, origin: h.p }, world);
     }
 
     let unit_direction = ray.dir.unit_vector();

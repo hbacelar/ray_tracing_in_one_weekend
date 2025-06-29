@@ -17,6 +17,41 @@ impl Vec3 {
         Vec3 { x, y, z }
     }
 
+    pub fn random() -> Self {
+        Vec3 {
+            x: rand::random(),
+            y: rand::random(),
+            z: rand::random(),
+        }
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Vec3 {
+            x: rand::random_range(min..max),
+            y: rand::random_range(min..max),
+            z: rand::random_range(min..max),
+        }
+    }
+
+    pub fn random_unit() -> Self {
+        loop {
+            let v = Self::random_range(-1.0, 1.0);
+            let lensq = v.length_squared();
+            if 1e-160 < lensq && lensq <= 1.0 {
+                return v / lensq.sqrt();
+            }
+        }
+    }
+
+    pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
+        let unit_on_shere = Self::random_unit();
+        if unit_on_shere.dot(&normal) > 0.0 {
+            unit_on_shere
+        } else {
+            -unit_on_shere
+        }
+    }
+
     pub fn length(&self) -> f64 {
         self.length_squared().sqrt()
     }
