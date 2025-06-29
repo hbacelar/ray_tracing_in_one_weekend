@@ -7,11 +7,23 @@ pub struct Color(pub Vec3);
 
 const INTENSITY: Interval = Interval::new(0.000, 0.999);
 
+fn linear_to_gamma(linear_component: f64) -> f64 {
+    if linear_component > 0.0 {
+        linear_component.sqrt()
+    } else {
+        0.0
+    }
+}
+
 impl fmt::Display for Color {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let r_byte = (256.0 * INTENSITY.clamp(self.0.x)) as u8;
-        let g_byte = (256.0 * INTENSITY.clamp(self.0.y)) as u8;
-        let b_byte = (256.0 * INTENSITY.clamp(self.0.z)) as u8;
+        let r = linear_to_gamma(self.0.x);
+        let g = linear_to_gamma(self.0.y);
+        let b = linear_to_gamma(self.0.z);
+
+        let r_byte = (256.0 * INTENSITY.clamp(r)) as u8;
+        let g_byte = (256.0 * INTENSITY.clamp(g)) as u8;
+        let b_byte = (256.0 * INTENSITY.clamp(b)) as u8;
 
         write!(f, "{} {} {}", r_byte, g_byte, b_byte)
     }
