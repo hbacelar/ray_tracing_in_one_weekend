@@ -33,7 +33,7 @@ fn ray_color<T: Hittable>(ray: &Ray, depth: u32, world: &[T]) -> Vec3 {
         return Vec3::default();
     }
     if let Some(h) = world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
-        let dir = Vec3::random_on_hemisphere(h.normal);
+        let dir = h.normal + Vec3::random_unit();
         return 0.5 * ray_color(&Ray { dir, origin: h.p }, depth - 1, world);
     }
 
