@@ -15,19 +15,26 @@ pub struct Camera {
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
     pixel_samples_scale: f64,
+    // Count of random samples for each pixel
     samples_per_pixel: u32,
+    // Maximum number of ray bounces into scene
+    max_depth: u32,
 }
 
 impl Default for Camera {
     fn default() -> Self {
-        Self::new(100, 1.0, 10)
+        Self::new(100, 1.0, 10, 10)
     }
 }
 
-fn ray_color<T: Hittable>(ray: &Ray, world: &[T]) -> Vec3 {
+fn ray_color<T: Hittable>(ray: &Ray, depth: u32, world: &[T]) -> Vec3 {
+    // If we've exceeded the ray bounce limit, no more light is gathered.
+    if depth == 0 {
+        return Vec3::default();
+    }
     if let Some(h) = world.hit(ray, Interval::new(0.0, f64::INFINITY)) {
         let dir = Vec3::random_on_hemisphere(h.normal);
-        return 0.5 * ray_color(&Ray { dir, origin: h.p }, world);
+        return 0.5 * ray_color(&Ray { dir, origin: h.p }, depth - 1, world);
     }
 
     let unit_direction = ray.dir.unit_vector();
@@ -49,7 +56,12 @@ fn sample_square() -> Vec3 {
 }
 
 impl Camera {
-    pub fn new(image_width: u32, aspect_ratio: f64, samples_per_pixel: u32) -> Self {
+    pub fn new(
+        image_width: u32,
+        aspect_ratio: f64,
+        samples_per_pixel: u32,
+        max_depth: u32,
+    ) -> Self {
         let image_height = (image_width as f64 / aspect_ratio).max(1.0) as u32;
 
         let center = Point::new(0.0, 0.0, 0.0);
@@ -94,6 +106,7 @@ impl Camera {
             pixel_delta_v,
             samples_per_pixel,
             pixel_samples_scale,
+            max_depth,
         }
     }
 
@@ -122,7 +135,7 @@ impl Camera {
                 let mut color = Vec3::default();
                 for _sample in 0..self.samples_per_pixel {
                     let ray = self.get_ray(i, j);
-                    color += ray_color(&ray, world);
+                    color += ray_color(&ray, self.max_depth, world);
                 }
                 let color: Color = (color * self.pixel_samples_scale).into();
 
