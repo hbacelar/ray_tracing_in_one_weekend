@@ -79,6 +79,12 @@ impl Vec3 {
         }
         self / length
     }
+
+    pub fn near_zero(&self) -> bool {
+        let v: f64 = 1e-8;
+
+        self.x.abs() < v && self.y.abs() < v && self.z.abs() < v
+    }
 }
 
 impl Display for Vec3 {

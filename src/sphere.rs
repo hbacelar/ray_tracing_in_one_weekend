@@ -5,19 +5,24 @@ use crate::{
     vec3::Point,
 };
 
-pub struct Sphere {
+pub struct Sphere<'a, T> {
     pub center: Point,
     pub radius: f64,
+    pub material: &'a T,
 }
 
-impl Sphere {
-    pub fn new(center: Point, radius: f64) -> Self {
-        Self { center, radius }
+impl<'a, T> Sphere<'a, T> {
+    pub fn new(center: Point, radius: f64, material: &'a T) -> Self {
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
-impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
+impl<'a, T> Hittable<T> for Sphere<'a, T> {
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord<T>> {
         let oc = self.center - ray.origin;
         let a = ray.dir.length_squared();
         let h = ray.dir.dot(&oc);
@@ -40,6 +45,6 @@ impl Hittable for Sphere {
 
         let p = ray.at(root);
         let outward_normal = (p - self.center) / self.radius;
-        Some(HitRecord::new(ray, p, root, outward_normal))
+        Some(HitRecord::new(ray, p, root, outward_normal, self.material))
     }
 }
