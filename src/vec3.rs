@@ -85,6 +85,10 @@ impl Vec3 {
 
         self.x.abs() < v && self.y.abs() < v && self.z.abs() < v
     }
+
+    pub fn reflect(&self, n: &Vec3) -> Vec3 {
+        *&self - 2.0 * &self.dot(n) * *n
+    }
 }
 
 impl Display for Vec3 {

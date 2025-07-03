@@ -11,6 +11,12 @@ pub trait Material {
 }
 
 #[derive(Debug, Clone)]
+pub enum MaterialKind {
+    Lambertian(Lambertian),
+    Metal(Metal),
+}
+
+#[derive(Debug, Clone)]
 pub struct Lambertian {
     albedo: Color,
 }
@@ -34,5 +40,37 @@ impl Material for Lambertian {
             attenuation: self.albedo,
             scattered,
         })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Metal {
+    albedo: Color,
+}
+
+impl Metal {
+    pub fn new(albedo: Color) -> Self {
+        Self { albedo }
+    }
+}
+
+impl Material for Metal {
+    fn scatter<T>(&self, ray: &Ray, hit_record: &HitRecord<T>) -> Option<Scatter> {
+        let reflected = ray.dir.reflect(&hit_record.normal);
+        let scattered = Ray::new(hit_record.p, reflected);
+
+        Some(Scatter {
+            attenuation: self.albedo,
+            scattered,
+        })
+    }
+}
+
+impl Material for MaterialKind {
+    fn scatter<T>(&self, ray_in: &Ray, hit_record: &HitRecord<T>) -> Option<Scatter> {
+        match self {
+            MaterialKind::Lambertian(mat) => mat.scatter(ray_in, hit_record),
+            MaterialKind::Metal(mat) => mat.scatter(ray_in, hit_record),
+        }
     }
 }
