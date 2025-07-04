@@ -53,7 +53,7 @@ fn sample_square() -> Vec3 {
     // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
     Vec3 {
         x: rand::random::<f64>() - 0.5,
-        y: rand::random::<f64>() + 0.5,
+        y: rand::random::<f64>() - 0.5,
         z: 0.0,
     }
 }

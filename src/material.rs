@@ -14,6 +14,7 @@ pub trait Material {
 pub enum MaterialKind {
     Lambertian(Lambertian),
     Metal(Metal),
+    Dielectric(Dielectric),
 }
 
 #[derive(Debug, Clone)]
@@ -76,11 +77,40 @@ impl Material for Metal {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct Dielectric {
+    refraction_index: f64,
+}
+
+impl Dielectric {
+    pub fn new(refraction_index: f64) -> Self {
+        Self { refraction_index }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter<T>(&self, ray_in: &Ray, hit_record: &HitRecord<T>) -> Option<Scatter> {
+        let ri = if hit_record.front_face {
+            1.0 / self.refraction_index
+        } else {
+            self.refraction_index
+        };
+        let unit_dir = ray_in.dir.unit_vector();
+        let refracted = unit_dir.refract(&hit_record.normal, ri);
+
+        Some(Scatter {
+            attenuation: Color::new(1.0, 1.0, 1.0),
+            scattered: Ray::new(hit_record.p, refracted),
+        })
+    }
+}
+
 impl Material for MaterialKind {
     fn scatter<T>(&self, ray_in: &Ray, hit_record: &HitRecord<T>) -> Option<Scatter> {
         match self {
             MaterialKind::Lambertian(mat) => mat.scatter(ray_in, hit_record),
             MaterialKind::Metal(mat) => mat.scatter(ray_in, hit_record),
+            MaterialKind::Dielectric(mat) => mat.scatter(ray_in, hit_record),
         }
     }
 }

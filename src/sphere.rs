@@ -27,18 +27,18 @@ impl<'a, T> Hittable<T> for Sphere<'a, T> {
         let a = ray.dir.length_squared();
         let h = ray.dir.dot(&oc);
         let c = oc.length_squared() - self.radius * self.radius;
-        let discriminant = h * h - a * c;
 
+        let discriminant = h * h - a * c;
         if discriminant < 0.0 {
             return None;
         }
 
         let sqrt_d = discriminant.sqrt();
-        let root = (h - sqrt_d) / a;
 
-        if !ray_t.surrounds(root) {
+        let root = (h - sqrt_d) / a;
+        if !ray_t.contains(root) {
             let root = (h + sqrt_d) / a;
-            if !ray_t.surrounds(root) {
+            if !ray_t.contains(root) {
                 return None;
             }
         }
