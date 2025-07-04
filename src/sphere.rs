@@ -35,9 +35,9 @@ impl<'a, T> Hittable<T> for Sphere<'a, T> {
 
         let sqrt_d = discriminant.sqrt();
 
-        let root = (h - sqrt_d) / a;
+        let mut root = (h - sqrt_d) / a;
         if !ray_t.contains(root) {
-            let root = (h + sqrt_d) / a;
+            root = (h + sqrt_d) / a;
             if !ray_t.contains(root) {
                 return None;
             }
