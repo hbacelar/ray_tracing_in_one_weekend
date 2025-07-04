@@ -24,7 +24,7 @@ pub struct Camera {
 
 impl Default for Camera {
     fn default() -> Self {
-        Self::new(100, 1.0, 10, 10)
+        Self::new(100, 1.0, 10, 10, 90.0)
     }
 }
 
@@ -64,6 +64,7 @@ impl Camera {
         aspect_ratio: f64,
         samples_per_pixel: u32,
         max_depth: u32,
+        vfov: f64,
     ) -> Self {
         let image_height = (image_width as f64 / aspect_ratio).max(1.0) as u32;
 
@@ -71,7 +72,9 @@ impl Camera {
 
         // Viewport dimensions
         let focal_length = 1.0;
-        let viewport_height = 2.0;
+        let theta = vfov.to_degrees();
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h * focal_length;
         let viewport_width = viewport_height * (image_width as f64 / image_height as f64);
 
         // Calculate the vectors across the horizontal and down the vertical viewport edges.
