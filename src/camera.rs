@@ -24,7 +24,16 @@ pub struct Camera {
 
 impl Default for Camera {
     fn default() -> Self {
-        Self::new(100, 1.0, 10, 10, 90.0)
+        Self::new(
+            100,
+            1.0,
+            10,
+            10,
+            90.0,
+            Point::new(0.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, -1.0),
+            Vec3::new(0.0, 1.0, 0.0),
+        )
     }
 }
 
@@ -65,29 +74,36 @@ impl Camera {
         samples_per_pixel: u32,
         max_depth: u32,
         vfov: f64,
+        lookfrom: Point,
+        lookat: Point,
+        vup: Vec3,
     ) -> Self {
         let image_height = (image_width as f64 / aspect_ratio).max(1.0) as u32;
 
-        let center = Point::new(0.0, 0.0, 0.0);
+        let center = lookfrom;
 
         // Viewport dimensions
-        let focal_length = 1.0;
-        let theta = vfov.to_degrees();
+        let focal_length = (lookfrom - lookat).length();
+        let theta = vfov.to_radians();
         let h = (theta / 2.0).tan();
         let viewport_height = 2.0 * h * focal_length;
         let viewport_width = viewport_height * (image_width as f64 / image_height as f64);
 
+        // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
+        let w = (lookfrom - lookat).unit_vector();
+        let u = vup.cross(&w).unit_vector();
+        let v = w.cross(&u);
+
         // Calculate the vectors across the horizontal and down the vertical viewport edges.
-        let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+        let viewport_u = viewport_width * u;
+        let viewport_v = viewport_height * -v;
 
         // Calculate the horizontal and vertical delta vectors from pixel to pixel.
         let pixel_delta_u = viewport_u / image_width as f64;
         let pixel_delta_v = viewport_v / image_height as f64;
 
         // Calculate the location of the upper left pixel.
-        let viewport_upper_left =
-            center - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+        let viewport_upper_left = center - (focal_length * w) - viewport_u / 2.0 - viewport_v / 2.0;
 
         let pixel00_loc = viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5;
 
