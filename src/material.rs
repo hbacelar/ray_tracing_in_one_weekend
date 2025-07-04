@@ -88,6 +88,16 @@ impl Dielectric {
     }
 }
 
+impl Dielectric {
+    fn reflectance(cosine: f64, ri: f64) -> f64 {
+        // Use Schlick's approximation for reflectance.
+        let mut r0 = (1.0 - ri) / (1.0 + ri);
+        r0 = r0 * r0;
+
+        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    }
+}
+
 impl Material for Dielectric {
     fn scatter<T>(&self, ray_in: &Ray, hit_record: &HitRecord<T>) -> Option<Scatter> {
         let ri = if hit_record.front_face {
@@ -101,7 +111,7 @@ impl Material for Dielectric {
 
         let cannot_refract = ri * sin_theta > 1.0;
 
-        let direction = if cannot_refract {
+        let direction = if cannot_refract || (Self::reflectance(cos_theta, ri) > rand::random()) {
             unit_dir.reflect(&hit_record.normal)
         } else {
             unit_dir.refract(&hit_record.normal, ri)

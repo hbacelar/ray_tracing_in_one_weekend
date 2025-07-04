@@ -9,13 +9,15 @@ use ray_tracing_in_one_weekend::{
 fn main() {
     // World
     let mat_ground = MaterialKind::Lambertian(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_left = MaterialKind::Dielectric(Dielectric::new(1.00 / 1.33));
+    let material_left = MaterialKind::Dielectric(Dielectric::new(1.50));
+    let material_bubble = MaterialKind::Dielectric(Dielectric::new(1.00 / 1.50));
     let material_center = MaterialKind::Lambertian(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
     let material_right = MaterialKind::Metal(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
     let world = vec![
         Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0, &mat_ground),
         Sphere::new(Point::new(-1.0, 0.0, -1.0), 0.5, &material_left),
+        Sphere::new(Point::new(-1.0, 0.0, -1.0), 0.4, &material_bubble),
         Sphere::new(Point::new(0.0, 0.0, -1.2), 0.5, &material_center),
         Sphere::new(Point::new(1.0, 0.0, -1.0), 0.5, &material_right),
     ];
