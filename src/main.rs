@@ -1,5 +1,5 @@
 use ray_tracing_in_one_weekend::{
-    camera::Camera,
+    camera::CameraBuilder,
     color::Color,
     material::{Dielectric, Lambertian, MaterialKind, Metal},
     sphere::Sphere,
@@ -27,17 +27,18 @@ fn main() {
     let aspect_ratio: f64 = 16.0 / 9.0;
     let image_width: u32 = 800;
 
-    let cam = Camera::new(
-        image_width,
-        aspect_ratio,
-        100,
-        50,
-        20.0,
-        Point::new(-2.0, 2.0, 1.0),
-        Point::new(0.0, 0.0, -1.0),
-        Vec3::new(0.0, 1.0, 0.0),
-        10.0,
-        3.4,
-    );
+    let cam = CameraBuilder::new()
+        .image_width(image_width)
+        .aspect_ratio(aspect_ratio)
+        .samples_per_pixel(100)
+        .max_depth(50)
+        .vfov(20.0)
+        .lookfrom(Point::new(-2.0, 2.0, 1.0))
+        .lookat(Point::new(0.0, 0.0, -1.0))
+        .vup(Vec3::new(0.0, 1.0, 0.0))
+        .defocus_angle(10.0)
+        .focus_dist(3.4)
+        .build();
+
     cam.render(&world);
 }
