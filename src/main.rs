@@ -36,6 +36,8 @@ fn main() {
         Point::new(-2.0, 2.0, 1.0),
         Point::new(0.0, 0.0, -1.0),
         Vec3::new(0.0, 1.0, 0.0),
+        10.0,
+        3.4,
     );
     cam.render(&world);
 }
