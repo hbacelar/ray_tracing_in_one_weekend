@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use crate::{
     color::Color,
     hittable::Hittable,
@@ -163,8 +165,8 @@ impl CameraBuilder {
 
 #[derive(Debug, Clone)]
 pub struct Camera {
-    image_width: u32,
-    image_height: u32,
+    pub image_width: u32,
+    pub image_height: u32,
     center: Point,
     pixel00_loc: Point,
     pixel_delta_u: Vec3,
@@ -180,14 +182,19 @@ pub struct Camera {
     defocus_disk_v: Vec3,
 }
 
-fn ray_color<M: Material, T: Hittable<M>>(ray: &Ray, depth: u32, world: &[T]) -> Vec3 {
+fn ray_color<M: Material, T: Hittable<M>>(
+    rng: &mut impl Rng,
+    ray: &Ray,
+    depth: u32,
+    world: &[T],
+) -> Vec3 {
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if depth == 0 {
         return Vec3::default();
     }
     if let Some(h) = world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
-        if let Some(s) = h.material.scatter(ray, &h) {
-            return *s.attenuation * ray_color(&s.scattered, depth - 1, world);
+        if let Some(s) = h.material.scatter(rng, ray, &h) {
+            return *s.attenuation * ray_color(rng, &s.scattered, depth - 1, world);
         }
         return Vec3::new(0.0, 0.0, 0.0);
     }
@@ -201,27 +208,27 @@ fn ray_color<M: Material, T: Hittable<M>>(ray: &Ray, depth: u32, world: &[T]) ->
     white * (1.0 - a) + blue * a
 }
 
-fn sample_square() -> Vec3 {
+fn sample_square(rng: &mut impl Rng) -> Vec3 {
     // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
     Vec3 {
-        x: rand::random::<f64>() - 0.5,
-        y: rand::random::<f64>() - 0.5,
+        x: rng.random::<f64>() - 0.5,
+        y: rng.random::<f64>() - 0.5,
         z: 0.0,
     }
 }
 
 impl Camera {
-    fn defocus_disk_sample(&self) -> Vec3 {
+    fn defocus_disk_sample(&self, rng: &mut impl Rng) -> Vec3 {
         // Returns a random point in the camera defocus disk.
-        let p = Vec3::random_in_unit_disk();
+        let p = Vec3::random_in_unit_disk(rng);
         self.center + (p.x * self.defocus_disk_u) + (p.y * self.defocus_disk_v)
     }
 
-    fn get_ray(&self, i: u32, j: u32) -> Ray {
+    fn get_ray(&self, rng: &mut impl Rng, i: u32, j: u32) -> Ray {
         // Construct a camera ray originating from the origin and directed at randomly sampled
         // point around the pixel location i, j.
 
-        let offset = sample_square();
+        let offset = sample_square(rng);
         let pixel_sample = self.pixel00_loc
             + ((i as f64 + offset.x) * self.pixel_delta_u)
             + ((j as f64 + offset.y) * self.pixel_delta_v);
@@ -229,7 +236,7 @@ impl Camera {
         let ray_origin = if self.defocus_angle <= 0.0 {
             self.center
         } else {
-            self.defocus_disk_sample()
+            self.defocus_disk_sample(rng)
         };
 
         Ray {
@@ -238,8 +245,13 @@ impl Camera {
         }
     }
 
-    pub fn render<M: Material, T: Hittable<M>>(&self, world: &[T]) {
-        print!("P3\n{} {}\n255\n", self.image_width, self.image_height);
+    pub fn render<M: Material, T: Hittable<M>>(
+        &self,
+        rng: &mut impl Rng,
+        world: &[T],
+    ) -> Vec<Color> {
+        let mut pixels = Vec::with_capacity((self.image_width * self.image_height) as usize);
+        // print!("P3\n{} {}\n255\n", self.image_width, self.image_height);
 
         for j in 0..self.image_height {
             eprint!("\rScanlines remaining: {} ", self.image_height - j);
@@ -247,14 +259,16 @@ impl Camera {
             for i in 0..self.image_width {
                 let mut color = Vec3::default();
                 for _sample in 0..self.samples_per_pixel {
-                    let ray = self.get_ray(i, j);
-                    color += ray_color(&ray, self.max_depth, world);
+                    let ray = self.get_ray(rng, i, j);
+                    color += ray_color(rng, &ray, self.max_depth, world);
                 }
                 let color: Color = (color * self.pixel_samples_scale).into();
+                pixels.push(color);
 
-                println!("{color}");
+                // println!("{color}");
             }
         }
         eprint!("\rDone.                   \n");
+        pixels
     }
 }

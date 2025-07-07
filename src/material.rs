@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use crate::{color::Color, hittable::HitRecord, ray::Ray, vec3::Vec3};
 
 #[derive(Clone, Debug)]
@@ -7,7 +9,12 @@ pub struct Scatter {
 }
 
 pub trait Material {
-    fn scatter<T>(&self, ray_in: &Ray, hit_record: &HitRecord<T>) -> Option<Scatter>;
+    fn scatter<T>(
+        &self,
+        rng: &mut impl Rng,
+        ray_in: &Ray,
+        hit_record: &HitRecord<T>,
+    ) -> Option<Scatter>;
 }
 
 #[derive(Debug, Clone)]
@@ -29,8 +36,13 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter<T>(&self, _: &Ray, hit_record: &HitRecord<T>) -> Option<Scatter> {
-        let mut scatter_dir = hit_record.normal + Vec3::random_unit();
+    fn scatter<T>(
+        &self,
+        rng: &mut impl Rng,
+        _: &Ray,
+        hit_record: &HitRecord<T>,
+    ) -> Option<Scatter> {
+        let mut scatter_dir = hit_record.normal + Vec3::random_unit(rng);
 
         if scatter_dir.near_zero() {
             scatter_dir = hit_record.normal
@@ -60,9 +72,14 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter<T>(&self, ray: &Ray, hit_record: &HitRecord<T>) -> Option<Scatter> {
+    fn scatter<T>(
+        &self,
+        rng: &mut impl Rng,
+        ray: &Ray,
+        hit_record: &HitRecord<T>,
+    ) -> Option<Scatter> {
         // Small displace on sphere fuzz
-        let reflected = ray.dir.reflect(&hit_record.normal) + (Vec3::random_unit() * self.fuzz);
+        let reflected = ray.dir.reflect(&hit_record.normal) + (Vec3::random_unit(rng) * self.fuzz);
         let scattered = Ray::new(hit_record.p, reflected);
 
         // check if ray reflect is wrong dir after fuzz
@@ -99,7 +116,12 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter<T>(&self, ray_in: &Ray, hit_record: &HitRecord<T>) -> Option<Scatter> {
+    fn scatter<T>(
+        &self,
+        _: &mut impl Rng,
+        ray_in: &Ray,
+        hit_record: &HitRecord<T>,
+    ) -> Option<Scatter> {
         let ri = if hit_record.front_face {
             1.0 / self.refraction_index
         } else {
@@ -125,11 +147,16 @@ impl Material for Dielectric {
 }
 
 impl Material for MaterialKind {
-    fn scatter<T>(&self, ray_in: &Ray, hit_record: &HitRecord<T>) -> Option<Scatter> {
+    fn scatter<T>(
+        &self,
+        rng: &mut impl Rng,
+        ray_in: &Ray,
+        hit_record: &HitRecord<T>,
+    ) -> Option<Scatter> {
         match self {
-            MaterialKind::Lambertian(mat) => mat.scatter(ray_in, hit_record),
-            MaterialKind::Metal(mat) => mat.scatter(ray_in, hit_record),
-            MaterialKind::Dielectric(mat) => mat.scatter(ray_in, hit_record),
+            MaterialKind::Lambertian(mat) => mat.scatter(rng, ray_in, hit_record),
+            MaterialKind::Metal(mat) => mat.scatter(rng, ray_in, hit_record),
+            MaterialKind::Dielectric(mat) => mat.scatter(rng, ray_in, hit_record),
         }
     }
 }

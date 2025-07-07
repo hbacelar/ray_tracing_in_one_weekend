@@ -3,6 +3,8 @@ use std::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub},
 };
 
+use rand::Rng;
+
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub struct Vec3 {
     pub x: f64,
@@ -17,25 +19,25 @@ impl Vec3 {
         Vec3 { x, y, z }
     }
 
-    pub fn random() -> Self {
+    pub fn random(rng: &mut impl Rng) -> Self {
         Vec3 {
-            x: rand::random(),
-            y: rand::random(),
-            z: rand::random(),
+            x: rng.random(),
+            y: rng.random(),
+            z: rng.random(),
         }
     }
 
-    pub fn random_range(min: f64, max: f64) -> Self {
+    pub fn random_range(rng: &mut impl Rng, min: f64, max: f64) -> Self {
         Vec3 {
-            x: rand::random_range(min..max),
-            y: rand::random_range(min..max),
-            z: rand::random_range(min..max),
+            x: rng.random_range(min..max),
+            y: rng.random_range(min..max),
+            z: rng.random_range(min..max),
         }
     }
 
-    pub fn random_unit() -> Self {
+    pub fn random_unit(rng: &mut impl Rng) -> Self {
         loop {
-            let v = Self::random_range(-1.0, 1.0);
+            let v = Self::random_range(rng, -1.0, 1.0);
             let lensq = v.length_squared();
             if 1e-160 < lensq && lensq <= 1.0 {
                 return v / lensq.sqrt();
@@ -43,8 +45,8 @@ impl Vec3 {
         }
     }
 
-    pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
-        let unit_on_shere = Self::random_unit();
+    pub fn random_on_hemisphere(rng: &mut impl Rng, normal: Vec3) -> Vec3 {
+        let unit_on_shere = Self::random_unit(rng);
         if unit_on_shere.dot(&normal) > 0.0 {
             unit_on_shere
         } else {
@@ -52,11 +54,11 @@ impl Vec3 {
         }
     }
 
-    pub fn random_in_unit_disk() -> Vec3 {
+    pub fn random_in_unit_disk(rng: &mut impl Rng) -> Vec3 {
         loop {
             let p = Vec3 {
-                x: rand::random_range(-1.0..1.0),
-                y: rand::random_range(-1.0..1.0),
+                x: rng.random_range(-1.0..1.0),
+                y: rng.random_range(-1.0..1.0),
                 z: 0.0,
             };
             if p.length_squared() < 1.0 {

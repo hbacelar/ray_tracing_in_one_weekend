@@ -33,6 +33,13 @@ impl Color {
     pub fn new(r: f64, g: f64, b: f64) -> Self {
         Self(Vec3::new(r, g, b))
     }
+
+    pub fn output_pixels(pixels: Vec<Color>, width: u32, height: u32) {
+        print!("P3\n{} {}\n255\n", width, height);
+        for color in pixels {
+            println!("{color}");
+        }
+    }
 }
 
 impl From<Vec3> for Color {

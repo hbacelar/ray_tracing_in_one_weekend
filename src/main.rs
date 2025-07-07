@@ -1,3 +1,5 @@
+use rand::SeedableRng;
+use rand_chacha::ChaCha12Rng;
 use ray_tracing_in_one_weekend::{
     camera::CameraBuilder,
     color::Color,
@@ -25,11 +27,11 @@ fn main() {
                 world_centers.push(center);
                 if chose_mat < 0.8 {
                     // diffuse
-                    let albedo = Vec3::random() * Vec3::random();
+                    let albedo = Vec3::random(&mut rand::rng()) * Vec3::random(&mut rand::rng());
                     materials.push(MaterialKind::Lambertian(Lambertian::new(albedo.into())));
                 } else if chose_mat < 0.95 {
                     // metal
-                    let albedo = Vec3::random_range(0.5, 1.0);
+                    let albedo = Vec3::random_range(&mut rand::rng(), 0.5, 1.0);
                     let fuz: f64 = rand::random_range(0.0..0.5);
                     materials.push(MaterialKind::Metal(Metal::new(albedo.into(), fuz)));
                 } else {
@@ -82,5 +84,8 @@ fn main() {
         .focus_dist(10.0)
         .build();
 
-    cam.render(&world);
+    let mut rng = ChaCha12Rng::from_rng(&mut rand::rng());
+    let pixels = cam.render(&mut rng, &world);
+
+    Color::output_pixels(pixels, cam.image_width, cam.image_height);
 }
