@@ -1,8 +1,11 @@
-use std::{fmt, ops::Deref};
+use std::{
+    fmt,
+    ops::{AddAssign, Deref, DivAssign},
+};
 
 use crate::{interval::Interval, vec3::Vec3};
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Color(pub Vec3);
 
 const INTENSITY: Interval = Interval::new(0.000, 0.999);
@@ -12,6 +15,18 @@ fn linear_to_gamma(linear_component: f64) -> f64 {
         linear_component.sqrt()
     } else {
         0.0
+    }
+}
+
+impl AddAssign for Color {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+    }
+}
+
+impl DivAssign<f64> for Color {
+    fn div_assign(&mut self, rhs: f64) {
+        self.0 /= rhs
     }
 }
 

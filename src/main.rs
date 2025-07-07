@@ -7,6 +7,7 @@ use ray_tracing_in_one_weekend::{
     sphere::Sphere,
     vec3::{Point, Vec3},
 };
+use rayon::prelude::*;
 
 fn main() {
     // World
@@ -74,7 +75,7 @@ fn main() {
     let cam = CameraBuilder::new()
         .image_width(image_width)
         .aspect_ratio(aspect_ratio)
-        .samples_per_pixel(100)
+        .samples_per_pixel(10)
         .max_depth(50)
         .vfov(20.0)
         .lookfrom(Point::new(13.0, 2.0, 3.0))
@@ -84,8 +85,26 @@ fn main() {
         .focus_dist(10.0)
         .build();
 
-    let mut rng = ChaCha12Rng::from_rng(&mut rand::rng());
-    let pixels = cam.render(&mut rng, &world);
+    //render
+    let n_passes = 10;
+    let results: Vec<Vec<Color>> = (0..n_passes)
+        .into_par_iter()
+        .map(|_| {
+            let mut rng = ChaCha12Rng::from_rng(&mut rand::rng());
+            cam.render(&mut rng, &world)
+        })
+        .collect();
 
-    Color::output_pixels(pixels, cam.image_width, cam.image_height);
+    // Average all runs
+    let mut final_image = vec![Color::default(); (cam.image_width * cam.image_height) as usize];
+    for image in results {
+        for (i, pixel) in image.into_iter().enumerate() {
+            final_image[i] += pixel;
+        }
+    }
+
+    for pixel in &mut final_image {
+        *pixel /= n_passes as f64;
+    }
+    Color::output_pixels(final_image, cam.image_width, cam.image_height);
 }
