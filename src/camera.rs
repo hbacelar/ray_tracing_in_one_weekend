@@ -238,11 +238,9 @@ impl Camera {
         } else {
             self.defocus_disk_sample(rng)
         };
+        let ray_time = rng.random();
 
-        Ray {
-            dir: pixel_sample - ray_origin,
-            origin: ray_origin,
-        }
+        Ray::at_time(ray_origin, pixel_sample - ray_origin, ray_time)
     }
 
     pub fn render<M: Material, T: Hittable<M>>(
@@ -251,8 +249,6 @@ impl Camera {
         world: &[T],
     ) -> Vec<Color> {
         let mut pixels = Vec::with_capacity((self.image_width * self.image_height) as usize);
-        // print!("P3\n{} {}\n255\n", self.image_width, self.image_height);
-
         for j in 0..self.image_height {
             eprint!("\rScanlines remaining: {} ", self.image_height - j);
 
@@ -264,8 +260,6 @@ impl Camera {
                 }
                 let color: Color = (color * self.pixel_samples_scale).into();
                 pixels.push(color);
-
-                // println!("{color}");
             }
         }
         eprint!("\rDone.                   \n");

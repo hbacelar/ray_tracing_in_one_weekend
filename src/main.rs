@@ -65,7 +65,13 @@ fn main() {
         let mat = materials
             .get(idx)
             .expect("materials and centers are not the same size");
-        world.push(Sphere::new(*center, 0.2, mat));
+        match mat {
+            MaterialKind::Lambertian(_) => {
+                let center2 = *center + Vec3::new(0.0, rand::random_range(0.0..0.5), 0.0);
+                world.push(Sphere::new_moving(*center, center2, 0.2, mat));
+            }
+            _ => world.push(Sphere::new(*center, 0.2, mat)),
+        };
     }
 
     // Camera

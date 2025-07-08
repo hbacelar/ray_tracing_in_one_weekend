@@ -39,7 +39,7 @@ impl Material for Lambertian {
     fn scatter<T>(
         &self,
         rng: &mut impl Rng,
-        _: &Ray,
+        r_in: &Ray,
         hit_record: &HitRecord<T>,
     ) -> Option<Scatter> {
         let mut scatter_dir = hit_record.normal + Vec3::random_unit(rng);
@@ -48,7 +48,7 @@ impl Material for Lambertian {
             scatter_dir = hit_record.normal
         }
 
-        let scattered = Ray::new(hit_record.p, scatter_dir);
+        let scattered = Ray::at_time(hit_record.p, scatter_dir, r_in.time);
         Some(Scatter {
             attenuation: self.albedo,
             scattered,
@@ -75,12 +75,13 @@ impl Material for Metal {
     fn scatter<T>(
         &self,
         rng: &mut impl Rng,
-        ray: &Ray,
+        ray_in: &Ray,
         hit_record: &HitRecord<T>,
     ) -> Option<Scatter> {
         // Small displace on sphere fuzz
-        let reflected = ray.dir.reflect(&hit_record.normal) + (Vec3::random_unit(rng) * self.fuzz);
-        let scattered = Ray::new(hit_record.p, reflected);
+        let reflected =
+            ray_in.dir.reflect(&hit_record.normal) + (Vec3::random_unit(rng) * self.fuzz);
+        let scattered = Ray::at_time(hit_record.p, reflected, ray_in.time);
 
         // check if ray reflect is wrong dir after fuzz
         if scattered.dir.dot(&hit_record.normal) > 0.0 {
@@ -141,7 +142,7 @@ impl Material for Dielectric {
 
         Some(Scatter {
             attenuation: Color::new(1.0, 1.0, 1.0),
-            scattered: Ray::new(hit_record.p, direction),
+            scattered: Ray::at_time(hit_record.p, direction, ray_in.time),
         })
     }
 }
