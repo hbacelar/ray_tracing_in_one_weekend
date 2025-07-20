@@ -1,5 +1,8 @@
 use crate::{
-    aabb::AABB, interval::Interval, ray::Ray, vec3::{Point, Vec3}
+    aabb::AABB,
+    interval::Interval,
+    ray::Ray,
+    vec3::{Point, Vec3},
 };
 
 pub struct HitRecord<'a, T> {
@@ -32,7 +35,7 @@ impl<'a, T> HitRecord<'a, T> {
 pub trait Hittable<T> {
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord<T>>;
 
-    fn bounding_box(&self) -> AABB; 
+    fn bounding_box(&self) -> AABB;
 }
 
 impl<T: Hittable<M>, M> Hittable<M> for &[T] {
@@ -51,6 +54,8 @@ impl<T: Hittable<M>, M> Hittable<M> for &[T] {
     }
 
     fn bounding_box(&self) -> AABB {
-        todo!()
+        self.iter().fold(AABB::default(), |acc, elem| {
+            AABB::new_from_boxes(&acc, &elem.bounding_box())
+        })
     }
 }
